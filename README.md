@@ -5,3 +5,5 @@ A Japanese input for VR
 
 
 It works on Oculus Quest (2) with Unity. 
+
+It meets your expectations to input characters by **sticks and triggers only**.
