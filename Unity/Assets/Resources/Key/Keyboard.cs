@@ -38,6 +38,8 @@ public class Keyboard : MonoBehaviour
     };
 
     public Text inputText;
+    public GameObject select1;
+    public GameObject select2;
 
     private static Texture2D activeTexture;
     private static Texture2D inactiveTexture;
@@ -49,6 +51,8 @@ public class Keyboard : MonoBehaviour
     {
         activeTexture = Resources.Load<Texture2D>("Key/Textures/active");
         inactiveTexture = Resources.Load<Texture2D>("Key/Textures/inactive");
+        select1 = GameObject.Find("Select1");
+        select2 = GameObject.Find("Select2");
 
         for (int mainKana = 0; mainKana < (int)Kana.None; mainKana+=5)
         {
@@ -179,20 +183,9 @@ public class Keyboard : MonoBehaviour
             foreach (var item in keyGroups){
                 item.SetActive(true);
                 item.SetChildsActive(false);
-                if(mainKana % 5 == 0){
-                    if((int)item.keys[0].kana < 30){
-                        item.HighlightChild(0);
-                    } else{
-                        item.HighlightChild(-1);
-                    }
-                }else{
-                    if((int)item.keys[0].kana < 30){
-                        item.HighlightChild(-1);
-                    } else{
-                        item.HighlightChild(0);
-                    }
-                }
             }
+            select1.SetActive(mainKana == (int)Kana.None);
+            select2.SetActive(mainKana == (int)Kana.None + 1);
         }else{
             var activeGroup = keyGroups[activeGroupIdx];
             foreach (var item in keyGroups){
