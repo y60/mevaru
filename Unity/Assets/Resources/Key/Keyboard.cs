@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,7 +18,8 @@ public enum Kana
     Ra, Ri, Ru, Re, Ro,
     Wa, Wo, N, Bar, Nami,
     Ten, Maru, Hatena, Bikkuri, Santen,
-    None
+    None,
+    Dakuten,
 }
 
 
@@ -38,6 +40,7 @@ public class Keyboard : MonoBehaviour
     };
 
     public Text inputText;
+    private StringBuilder sb = new StringBuilder("", 50);
     public GameObject select1;
     public GameObject select2;
 
@@ -45,6 +48,7 @@ public class Keyboard : MonoBehaviour
     private static Texture2D inactiveTexture;
     
     private KeyGroup[] keyGroups = new KeyGroup[(int)Kana.None/5];
+    private Key dakuten;
 
     // Start is called before the first frame update
     void Start()
@@ -59,6 +63,7 @@ public class Keyboard : MonoBehaviour
             Debug.Log(((Kana)mainKana).ToString());
             keyGroups[mainKana/5] = new KeyGroup((Kana)mainKana);
         }
+        dakuten = new Key(Kana.Dakuten, GameObject.Find("Dakuten"));
 
         inputText = GameObject.Find("InputText").GetComponent<UnityEngine.UI.Text>();
     }
@@ -71,10 +76,15 @@ public class Keyboard : MonoBehaviour
 
         if(rightInput == 10){
             onBackspace();
-        }else{  
-            if(rightInput >=5){
-                onInput((Kana)(mainKana + rightInput % 5));
-                rightInput = -1;
+        }else{ 
+            // if a key group is selected
+            if(mainKana < (int)Kana.None){
+                if(rightInput >= 5){
+                    onInput((Kana)(mainKana + rightInput % 5));
+                    rightInput = -1;
+                }
+            }else if(rightInput == 5){
+                onDakuten();
             }
             selectKey(mainKana, rightInput);
         }
@@ -186,6 +196,9 @@ public class Keyboard : MonoBehaviour
             }
             select1.SetActive(mainKana == (int)Kana.None);
             select2.SetActive(mainKana == (int)Kana.None + 1);
+            
+            dakuten.SetActive(true);
+            dakuten.SetHighlighted(rightInput==0);
         }else{
             var activeGroup = keyGroups[activeGroupIdx];
             foreach (var item in keyGroups){
@@ -196,15 +209,48 @@ public class Keyboard : MonoBehaviour
                     item.SetActive(false);
                 }
             }
+            dakuten.SetActive(false);
             keyGroups[activeGroupIdx].HighlightChild(rightInput);
         }
     }
 
     void onInput(Kana kana){
-        inputText.text = inputText.text + kanaStrs[(int)kana];
+        sb.Append(kanaStrs[(int)kana]);
+        inputText.text = sb.ToString();
     }
     void onBackspace(){
-        inputText.text = inputText.text.Substring(0, inputText.text.Length-1);
+        sb.Length--;
+        inputText.text = sb.ToString();
+    }
+    void onDakuten(){
+        char result = changeKanaType(sb[sb.Length-1]);
+        if(result!=sb[sb.Length-1]){
+            sb[sb.Length-1] = result;
+            inputText.text =sb.ToString();
+        }
+    }
+
+    char changeKanaType(char c){
+        if(('か' <= c && c <= 'ぢ') || ('ゃ' <= c && c <= 'よ')){
+            if(c % 2 ==0){
+                c--;
+            }else{
+                c++;
+            }
+        }else if('て' <= c && c <= 'ど' ){
+            if(c % 2 ==0){
+                c++;
+            }else{
+                c--;
+            }
+        }else if(('は' <= c && c <= 'ぽ') || ('っ' <= c && c <= 'づ')){
+            if(c % 3 <= 1){
+                c++;
+            }else{
+                c -= (char)2;
+            }
+        }
+        return c;
     }
     
     public class Key
@@ -225,9 +271,6 @@ public class Keyboard : MonoBehaviour
             this.textureIDs[1] = this.materials[1].GetTexturePropertyNameIDs()[0];
             materials[0].SetTexture(textureIDs[0], inactiveTexture);
             materials[1].SetTexture(textureIDs[1], Resources.Load<Texture2D>("Key/Textures/" + kana.ToString()));
-            if((int)kana % 5 != 0){
-                gameObject.SetActive(false);
-            }
         }
 
         public void SetHighlighted(bool flag){
