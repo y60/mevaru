@@ -1,9 +1,12 @@
 # mevaru
-A Japanese input for VR
+A Japanese input for VR.
+
+It meets your expectations to input characters by **sticks and triggers only**.
 
 ![demo](https://github.com/y60/mevaru/raw/main/demo/demo.gif)
 
 
-It works on Oculus Quest (2) with Unity. 
+## environment
 
-It meets your expectations to input characters by **sticks and triggers only**.
+- Oculus Quest 2
+- Unity
